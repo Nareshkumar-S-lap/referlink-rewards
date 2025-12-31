@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import { ShareModal } from "@/components/ShareModal";
 import { 
   Star, 
   Share2, 
@@ -15,7 +16,7 @@ import {
   Send, 
   QrCode, 
   Link2, 
-  BarChart3,
+  MoreHorizontal,
   Clock,
   ShieldCheck,
   TrendingUp,
@@ -94,6 +95,8 @@ export default function ProductDetail() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [linkGenerated, setLinkGenerated] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [shareModalTab, setShareModalTab] = useState<"link" | "qr">("link");
 
   const shareLink = `https://refshare.app/p/${slug}?ref=john_d`;
 
@@ -113,6 +116,20 @@ export default function ProductDetail() {
       description: "Link copied to clipboard.",
     });
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleWhatsAppShare = () => {
+    const message = `Check out this amazing deal! ${product.title} for just ₹${product.price.toLocaleString()} ${shareLink}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank");
+  };
+
+  const handleTelegramShare = () => {
+    window.open(`https://t.me/share/url?url=${encodeURIComponent(shareLink)}&text=${encodeURIComponent(product.title)}`, "_blank");
+  };
+
+  const openShareModal = (tab: "link" | "qr") => {
+    setShareModalTab(tab);
+    setShareModalOpen(true);
   };
 
   const commissionDisplay = product.commissionType === "percentage"
@@ -257,20 +274,36 @@ export default function ProductDetail() {
                       </Button>
                     </div>
                     <div className="grid grid-cols-4 gap-2">
-                      <Button variant="outline" className="flex-col h-auto py-3 gap-1">
+                      <Button 
+                        variant="outline" 
+                        className="flex-col h-auto py-3 gap-1 hover:bg-green-50 hover:border-green-300 dark:hover:bg-green-950"
+                        onClick={handleWhatsAppShare}
+                      >
                         <MessageCircle className="h-5 w-5 text-green-500" />
                         <span className="text-xs">WhatsApp</span>
                       </Button>
-                      <Button variant="outline" className="flex-col h-auto py-3 gap-1">
+                      <Button 
+                        variant="outline" 
+                        className="flex-col h-auto py-3 gap-1 hover:bg-blue-50 hover:border-blue-300 dark:hover:bg-blue-950"
+                        onClick={handleTelegramShare}
+                      >
                         <Send className="h-5 w-5 text-blue-500" />
                         <span className="text-xs">Telegram</span>
                       </Button>
-                      <Button variant="outline" className="flex-col h-auto py-3 gap-1">
-                        <QrCode className="h-5 w-5 text-foreground" />
+                      <Button 
+                        variant="outline" 
+                        className="flex-col h-auto py-3 gap-1 hover:bg-primary/10 hover:border-primary"
+                        onClick={() => openShareModal("qr")}
+                      >
+                        <QrCode className="h-5 w-5 text-primary" />
                         <span className="text-xs">QR Code</span>
                       </Button>
-                      <Button variant="outline" className="flex-col h-auto py-3 gap-1">
-                        <Share2 className="h-5 w-5 text-foreground" />
+                      <Button 
+                        variant="outline" 
+                        className="flex-col h-auto py-3 gap-1"
+                        onClick={() => openShareModal("link")}
+                      >
+                        <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
                         <span className="text-xs">More</span>
                       </Button>
                     </div>
@@ -301,6 +334,17 @@ export default function ProductDetail() {
             <Button variant="gold" size="xl" className="w-full">
               Buy Now - ₹{product.price.toLocaleString()}
             </Button>
+
+            {/* Share Modal */}
+            <ShareModal
+              open={shareModalOpen}
+              onOpenChange={setShareModalOpen}
+              shareLink={shareLink}
+              productTitle={product.title}
+              productPrice={product.price}
+              productImage={product.images[0]}
+              defaultTab={shareModalTab}
+            />
           </div>
         </div>
 
